@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 X = np.array([1, 2, 3, 4])
-Y = np.array([20, 38, 65, 78])
+Y = np.array([20, 40, 60, 80])
 
 mean_x = np.mean(X)
 mean_y = np.mean(Y)
