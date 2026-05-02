@@ -37,5 +37,5 @@ for i in range(1000):
 
     # Step 8: stop when prediction matches actual!
     if np.array_equal(predicted, Y):
-        print(f"\n✅ Model learned at loop {i+1}!")
+        print(f"\ Model learned at loop {i+1}!")
         break
