@@ -2,7 +2,7 @@ import math
 
 data = [
     ['sunny', 'hot', 'yes'],
-    ['sunny', 'cool', 'yes'],
+    ['sunny', 'cool', 'yes'],   
     ['rain', 'hot', 'yes'],
     ['rain','cool', 'no']
 ]
@@ -45,7 +45,7 @@ def best_feature(data):
    
 
     for col in range(num_features):
-        ig =information_gain(data, col)
+        ig =information_gain(data, col) 
 
         if ig > best_ig:
             best_col =col
