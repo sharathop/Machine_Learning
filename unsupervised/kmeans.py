@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from sklearn.preprocessing import StandardScaler, FunctionTransformer
 from sklearn.cluster import KMeans
 from sklearn.pipeline import Pipeline
+from sklearn.decomposition import PCA
 
 # -------------------------------
 # 1. Load data
@@ -35,6 +36,7 @@ customer_data.columns = [
     'PurchaseFrequency'
 ]
 
+
 # -------------------------------
 # 4. Visualization (RAW DATA)
 # -------------------------------
@@ -48,10 +50,64 @@ plt.ylabel('Quantity')
 plt.title('Raw Data Distribution')
 plt.show()
 
+
+# -------------------------------
+# Correlation visualization (scatter plots)
+# -------------------------------
+
+plt.figure(figsize=(12,4))
+
+# Spending vs Quantity
+plt.subplot(1,3,1)
+plt.scatter(customer_data['TotalSpending'], customer_data['TotalQuantity'])
+plt.xlabel('TotalSpending')
+plt.ylabel('TotalQuantity')
+plt.title('Spending vs Quantity')
+
+# Spending vs Frequency
+plt.subplot(1,3,2)
+plt.scatter(customer_data['TotalSpending'], customer_data['PurchaseFrequency'])
+plt.xlabel('TotalSpending')
+plt.ylabel('PurchaseFrequency')
+plt.title('Spending vs Frequency')
+
+# Quantity vs Frequency
+plt.subplot(1,3,3)
+plt.scatter(customer_data['TotalQuantity'], customer_data['PurchaseFrequency'])
+plt.xlabel('TotalQuantity')
+plt.ylabel('PurchaseFrequency')
+plt.title('Quantity vs Frequency')
+
+plt.tight_layout()
+plt.show()
+
+
+cor = customer_data.corr()
+print(cor)
+
+X_corr = customer_data[['TotalSpending', 'TotalQuantity']]
+scaler =StandardScaler()
+X_scaled = scaler.fit_transform(X_corr)
+
+pca =PCA(n_components=1)
+
+pc1 =pca.fit_transform(X_scaled)
+
+customer_data['Spending_Quantity_PC1'] = pc1
+
+# Keep other independent feature
+final_data = customer_data[
+    ['Spending_Quantity_PC1', 'PurchaseFrequency']
+]
+
+print(final_data.head())
+
+cor = final_data.corr()
+print(cor)
 # -------------------------------
 # 5. Features
 # -------------------------------
-X = customer_data[['TotalSpending', 'TotalQuantity', 'PurchaseFrequency']]
+X = final_data[['Spending_Quantity_PC1', 'PurchaseFrequency']]
 
 # -------------------------------
 # 6. Pipeline (log + scaling)
@@ -109,16 +165,17 @@ print(customer_data.groupby('Cluster').mean())
 # -------------------------------
 # 11. Cluster Visualization
 # -------------------------------
-plt.scatter(customer_data['TotalSpending'],
-            customer_data['TotalQuantity'],
+plt.scatter(final_data['Spending_Quantity_PC1'],
+            final_data['PurchaseFrequency'],
             c=customer_data['Cluster'])
 
-plt.xlabel('Spending')
-plt.ylabel('Quantity')
-plt.title('Customer Clusters')
+plt.xlabel('PC1')
+plt.ylabel('PurchaseFrequency')
+plt.title('Clusters After PCA')
+
 plt.show()
 
-# -------------------------------
+# # -------------------------------
 # 12. FULL PIPELINE (for prediction)
 # -------------------------------
 full_pipeline = Pipeline([
@@ -133,12 +190,34 @@ full_pipeline.fit(X)
 # -------------------------------
 # 13. Predict NEW customer
 # -------------------------------
-new_customer = [[5000, 200, 5]]  
+# New customer
+new_customer = pd.DataFrame({
+    'TotalSpending': [5000],
+    'TotalQuantity': [200],
+    'PurchaseFrequency': [5]
+})
 
+# Step 1: Take correlated features
+new_corr = new_customer[
+    ['TotalSpending', 'TotalQuantity']
+]
 
-cluster = full_pipeline.predict(new_customer)
+# Step 2: Apply SAME scaler
+new_scaled = scaler.transform(new_corr)
 
-print("\nNew Customer belongs to Cluster:", cluster[0])
+# Step 3: Apply SAME PCA
+new_pc1 = pca.transform(new_scaled)
+
+# Step 4: Final input
+new_final = pd.DataFrame({
+    'Spending_Quantity_PC1': new_pc1.flatten(),
+    'PurchaseFrequency': new_customer['PurchaseFrequency']
+})
+
+# Step 5: Predict
+cluster = full_pipeline.predict(new_final)
+
+print(cluster)
 
 from sklearn.metrics import silhouette_score
 
