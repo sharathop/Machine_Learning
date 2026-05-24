@@ -7,3 +7,7 @@ a.py
 demo.py
 house_price_prediction.py
 sklearn_practice.py
+
+*.zip
+
+pytorch\data
