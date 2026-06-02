@@ -1,5 +1,5 @@
 import torch
-import torch as nn
+import torch.nn.functional as F
 
 
 
@@ -14,7 +14,7 @@ def attention_score(W, K, V, mask=None):
         score = score.masked_fill(mask==0, -1e9)
 
     
-    attention_weight = nn.softmax(score, dim =-1)
+    attention_weight = F.softmax(score, dim =-1)
 
     output =torch.matmul(attention_weight, V)
 
@@ -28,7 +28,7 @@ W = torch.tensor([[
     [1.,0.,0]
 ]])
 
-K = W = torch.tensor([[
+K = torch.tensor([[
     [1.,1.,1.],
     [0.,1.,0.],
     [1.,1.,0]
